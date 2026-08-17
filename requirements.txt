@@ -1,0 +1,10 @@
+numpy>=1.24
+pandas>=2.0
+scikit-learn>=1.5
+lightgbm>=4.0
+xgboost>=2.0
+catboost>=1.2   # optional 4th ensemble member; code degrades gracefully if absent
+pypdf>=4.0      # only to re-read Trustworthiness_Evaluation.pdf
+# Optional for Phase-Two trustworthiness section:
+# shap>=0.44
+# codecarbon>=2.3

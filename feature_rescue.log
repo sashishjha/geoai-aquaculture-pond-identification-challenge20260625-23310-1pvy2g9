@@ -1,0 +1,40 @@
+Computing S3 Baseline Proxy (1 seed, lgbm only)...
+[load_raw] dropped 4 duplicate train rows
+  seed+00: kfold=0.9714 (F1=0.9621, AUC=0.9854) | slab=0.9716
+
+[proxy] config=8cb39e3b7a41 pi_t=0.6175
+  K-fold : 0.9714 ± 0.0000 (F1=0.9621, AUC=0.9854)
+  Slab   : 0.9716 ± 0.0000 (F1=0.9598, AUC=0.9893)
+  Sensitivity band: pi=0.50 → 0.9720 | pi=0.70 → 0.9756
+S3 Baseline: Score=0.9714±0.0020 (Logit=3.5265±0.0722)
+[load_raw] dropped 4 duplicate train rows
+Found 22 rescue candidates.
+
+--- Evaluating Candidate: VH_rescue_diff_std ---
+[VH_rescue_diff_std] Adversarial AUC: 0.5934 (must not approach 0.98)
+[load_raw] dropped 4 duplicate train rows
+  seed+00: kfold=0.9708 (F1=0.9614, AUC=0.9850) | slab=0.9759
+
+[proxy] config=b6066203845f pi_t=0.6175
+  K-fold : 0.9708 ± 0.0000 (F1=0.9614, AUC=0.9850)
+  Slab   : 0.9759 ± 0.0000 (F1=0.9667, AUC=0.9897)
+  Sensitivity band: pi=0.50 → 0.9715 | pi=0.70 → 0.9752
+[VH_rescue_diff_std] Proxy Score: 0.9708 (Logit: 3.5048)
+[VH_rescue_diff_std] Delta vs S3 (logit): -0.0217 (threshold: > 0.0722)
+[VH_rescue_diff_std] REJECTED: Not enough proxy gain.
+
+--- Evaluating Candidate: VH_rescue_diff_iqr ---
+[VH_rescue_diff_iqr] Adversarial AUC: 0.5735 (must not approach 0.98)
+[load_raw] dropped 4 duplicate train rows
+  seed+00: kfold=0.9718 (F1=0.9628, AUC=0.9853) | slab=0.9732
+
+[proxy] config=b6066203845f pi_t=0.6175
+  K-fold : 0.9718 ± 0.0000 (F1=0.9628, AUC=0.9853)
+  Slab   : 0.9732 ± 0.0000 (F1=0.9621, AUC=0.9899)
+  Sensitivity band: pi=0.50 → 0.9724 | pi=0.70 → 0.9761
+[VH_rescue_diff_iqr] Proxy Score: 0.9718 (Logit: 3.5412)
+[VH_rescue_diff_iqr] Delta vs S3 (logit): 0.0147 (threshold: > 0.0722)
+[VH_rescue_diff_iqr] REJECTED: Not enough proxy gain.
+
+--- Evaluating Candidate: VV_rescue_diff_std ---
+[VV_rescue_diff_std] Adversarial AUC: 0.5629 (must not approach 0.98)

@@ -1,0 +1,149 @@
+<USER_REQUEST>
+# Phase 9 Execution Directive — Handoff for Executing Agent
+
+Self-contained execution directive for Phase 9 of the Zindi GeoAI Aquaculture Pond challenge: S5 gain decomposition and hybrid, drift-immune phenology features, masked temporal CNN, blend, conditional pseudo-labeling round 2, and final-submission selection. Includes 4-day schedule, 20-submission budget allocation, and all acceptance gates.
+
+## Mission Brief And Current State
+
+You are executing Phase 9 of an established pipeline for the Zindi GeoAI Aquaculture Pond Identification Challenge. This directive is self-contained — everything you need is here.
+
+**Metric:** S = 0.6·F1 + 0.4·AUC. Submission has two columns: TargetRAUC (probability) and TargetF1 = (TargetRAUC >= 0.5) as integers. The 0.5 threshold is never tuned; calibration happens via global monotone logit shifts only.
+
+**Data:** Train 1,817 rows (40.4% ponds, fully observed 12 months × 12 bands). Test 1,030 rows, 2026-domain, masked to 4–6 month consecutive windows (-9999 outside), ~7% S2 cloud dropout within window, S1 never masked. Test index is randomly shuffled (verified: lag-1 autocorr −0.03) — no spatial structure to exploit. Adversarial AUC (masked-train vs test) = 0.9843: near-separable domains.
+
+**Banked results (public LB):**
+
+| Config | LB | AUC | F1 | Status |
+|---|---|---|---|---|
+| S3: 19 domain-confounded features dropped | 0.8242 | 0.8296 | 0.8208 | banked |
+| S4: rank-avg 4-GBM ensemble + logit shift | 0.8264 | 0.8263 | 0.8265 | **conservative anchor — frozen** |
+| S5: + ensemble-gated pseudo-labeling | 0.8271 | 0.8216 | 0.8308 | banked; AUC regressed |
+
+**Current champion proxy (real-OOF, pseudo-clean): S5 = 0.9808 ± 0.0008. π_t = 0.6175.**
+
+**Established facts you must not re-litigate:**
+- Loss-level adversarial reweighting destroys calibration (proven twice). The discriminator is a diagnostic only.
+- The 19 dropped features are unsalvageable via level-based row-relative reconstruction (tested; zero gain). Do not retry that form.
+- The 4 GBMs (LightGBM, XGBoost, CatBoost, HistGBM) have fully correlated errors — Nelder-Mead returned exactly uniform weights. More GBM tuning has near-zero EV.
+- Pseudo-labeling round 1 is done: F1 +0.0043, AUC −0.0047, uncertain-row shift hit 0.099 of a 0.10 kill threshold. Round 2 in its current form is banned (self-referential gate); a conditional variant is defined in the Day 3 section.
+- Proxy scores compress near 0.98: all score gates are stated in logit units. ΔL = change in logit(proxy composite); σ_L measured across ≥3 masking-simulation seeds (currently 1σ ≈ 0.043 logit units).
+
+## Hard Rules And Budget Discipline
+
+**Non-negotiable rules (carried from all prior phases):**
+1. Never tune the 0.5 threshold. Global monotone logit shifts only, re-derived from real-label OOF t\* after every retrain.
+2. Never apply adversarial weights to any loss.
+3. Pseudo-rows never enter validation folds; OOF, proxy, and t\* computed on real labels only.
+4. One variable per submission.
+5. Every submission routes through the numerically safe writer (float64, tie-free, monotonicity assert, CSV round-trip check, positive rate within ±0.05 of π_t).
+6. A candidate earns an LB slot only if ΔL > 1σ_L over the best banked configuration on the real-OOF proxy.
+
+**Submission budget: 20 slots (4 days × 5/day). Planned spend is 9–11. The remainder is reserve, not an invitation.**
+
+With 1,030 public rows, each LB score carries sampling noise of roughly ±0.01–0.02. Spending 20 submissions chasing +0.003 deltas is mining noise, and selecting the final pair by public-LB rank after 20 probes is how public-LB overfitting happens. Rules of spend:
+- No submission without a passed proxy gate. The LB confirms decisions; it does not make them.
+- If two consecutive submissions show proxy-predicted gains that the LB contradicts, STOP — the proxy has drifted; re-validate it against the now-larger LB history before spending another slot.
+- Day 4 is selection and confirmation only. No new experiments enter after Day 3 ends.
+
+**Kill criteria (unchanged):** LB AUC moves under a monotone-only change → writer broken, stop calibration work. Predicted positive rate outside π_t ± 0.05 → do not submit.
+
+## Day 1 — Step 9.0: S5 Decomposition And The Hybrid
+
+**9.0a — Decompose S5's F1 gain (zero cost, do first).**
+S5 beat S4 on F1 (+0.0043) but lost AUC (−0.0047). Determine whether the F1 gain came from *how many* rows S5 called positive (prevalence effect) or *which* rows (assignment effect):
+1. Count positives at the 0.5 cut: n_pos(S4) vs n_pos(S5).
+2. Compute the overlap of the two positive sets (Jaccard, and the raw flip counts in each direction).
+3. Verdict: if n_pos differs materially and the flipped rows are concentrated near the boundary, the gain is mostly prevalence. If n_pos is nearly equal but the sets differ, it is assignment — the hybrid is impossible; bank S5 and skip 9.0b.
+
+**9.0b — The hybrid candidate (submission #1, if 9.0a says prevalence).**
+Construct: S4's score vector (superior ranking) + one global logit shift chosen so that S4's positive *count* equals S5's positive count. This is rule-compliant — the same monotone-shift machinery used everywhere, with the shift constant derived from S5's implied prevalence instead of OOF t\*. It does not touch 0.5.
+- Expected upper bound if both components hold: AUC ≈ 0.8263 with F1 ≈ 0.8308 → composite ≈ 0.8290.
+- Gate before submitting: on OOF, the same construction (S4-OOF ranking, shift to S5-OOF prevalence) must show ΔL > 0 vs S4-OOF. Then submit as one variable.
+- If it wins on LB, it becomes the new conservative anchor, displacing S4.
+
+**Day 1 remainder — Step 9.1: two drift-immune phenology feature families.**
+Both are affine-drift-immune by construction — the invariance class that survives a 0.9843 adversarial gap. Neither has been tried (the failed rescue rebuilt level statistics; these are different physical quantities).
+
+**Family A — First-difference / transition dynamics (harvest-cycle signature).** Aquaculture ponds are drained and refilled for harvest: sharp VH spike (exposed bottom), then a drop on refill. Natural water never does this; rice floods smoothly and seasonally. Compute within the observed window, on dB SAR and on MNDWI:
+- max and P90 of |Δ month-over-month| for VH and MNDWI
+- count of sign changes of ΔVH whose magnitude exceeds a row-scaled threshold (e.g. 0.5 × row IQR of ΔVH)
+- count of crossings of the row's own median (VH, MNDWI)
+First differences in dB cancel additive gain drift exactly.
+
+**Family B — Within-row cross-band temporal correlation (phenology-coupling signature).** Per row, over observed months: Spearman corr(NDVI_t, MNDWI_t), corr(VH_t, MNDWI_t), corr(EVI_t, NDWI_t). Ponds: flat water signal, flat-low NDVI → near-zero correlation. Vegetation: strong NDVI–water anti-correlation over the growth cycle. Correlation is invariant to any per-band affine drift. Require ≥4 common valid months, else NaN (GBMs route around it). Add water-permanence fraction: share of observed months with MNDWI above the row's own median.
+
+**Admission protocol for 9.1:**
+1. Adversarial check first: add features to the masked-train discriminator; every new feature must land in the bottom half of domain importances. Reject any that re-inflate separability.
+2. Retrain the S3-config GBM stack with admitted features (one additive block). Gate: ΔL > 1σ_L across ≥3 masking seeds, AUC and F1 components reported separately (flag if one degrades >2σ even when composite passes).
+3. If the block passes as a whole, submit (submission #2). If it fails as a block, test Family A and Family B separately (at most one extra submission for the surviving family, #3). If both fail on proxy, spend nothing on LB.
+4. Whatever passes becomes the new GBM base config; the monthly index sequences feed the NN regardless of GBM outcome.
+
+## Days 2–3 — Steps 9.2–9.3: The Masked Temporal CNN And The Blend
+
+The four GBMs are one model family in four hats. The NN is the only structural-diversity lever left, and it exploits the one advantage the GBM pipeline can't: on-the-fly augmentation over the masking process itself.
+
+**9.2a — Architecture (dilated 1D CNN, 50k–150k parameters).**
+- **Input:** 12 timesteps × C channels. Channels: monthly spectral index sequences (NDVI, NDWI, MNDWI, EVI, AWEI, BSI, NDBI, SAR ratio, VH−VV in dB) + per-row robust-normalized band values + a binary S2-observed mask channel + an in-window mask channel + sin/cos month-of-year encoding. Missing timesteps zero-filled after normalization, always paired with the mask flags. Do NOT feed the 19 dropped absolute features or any raw absolute levels.
+- **Body:** 3 conv blocks, kernel 3, dilations 1/2/4, 32→64 channels, GroupNorm (never BatchNorm — unstable at this data size and interacts badly with domain shift), GELU, dropout 0.2–0.3.
+- **Pooling — the one non-negotiable detail:** masked global pooling, mean+max computed over VALID months only. This makes the representation window-length invariant. If pooling sees the zero-filled months, the model learns window length as a shortcut and dies on the domain gap.
+- **Head:** 2-layer MLP → single sigmoid.
+
+**9.2b — Training protocol.**
+- Identical StratifiedGroupKFold folds (block_size=25, no shuffle) as the GBMs — mandatory for legal OOF blending.
+- Augmentation on the fly, not static copies: every epoch, every train row draws a fresh window sampled from the empirical test (window_length, start_month) joint distribution, plus fresh 7% S2 dropout. S1 never dropped.
+- AdamW, lr 1e-3 cosine decay, weight decay 1e-2, batch 64, ≤100 epochs, early stopping on masked-fold-val AUC, label smoothing 0.05, EMA of weights.
+- 3–5 seeds per fold, averaged in logit space — seed variance is real at 1,817 rows.
+- No pseudo-labels in NN training. The NN must remain an independent view.
+
+**9.2c — NN admission gates (rank-margin terms, real labels only):**
+1. Solo OOF AUC within 0.03 of the GBM blend's OOF AUC.
+2. Spearman rank-correlation of NN OOF vs GBM-blend OOF below 0.85.
+Pass both → proceed to blend. Fail either → do not blend; keep as a diagnostic and consider one GRU variant (single-layer bidirectional, hidden 64, same masked pooling) before abandoning — but at most one variant. Do not iterate architectures beyond that; it's how days disappear.
+
+**9.3 — Blend and recalibrate.**
+- Rank-average the NN into the GBM blend, NN weight swept over 0.15–0.30 on OOF only.
+- Map blended ranks through the reference OOF distribution (existing machinery), re-measure t\* on the blended real-label OOF, re-derive the logit shift.
+- Gate: ΔL > 1σ_L vs best banked config. Submit (submission #4). Optionally submit the solo-NN-blend at a second weight if the sweep shows two distinct plateaus (submission #5, only if genuinely informative).
+- If 9.1 features passed, the NN trains on the updated input set — that is not a one-variable violation because the NN blend is itself the single delta vs the banked GBM-only config.
+
+## Day 3 — Step 9.4: Conditional Extras (Strict Gates)
+
+Only enter this section if Days 1–2 work is banked and ≥2 submission slots remain for Day 3.
+
+**9.4a — Pseudo-labeling Round 2, conditional variant (1 submission max).**
+Permitted ONLY if the NN passed its gates. The round-1 failure mode was a self-referential gate; the NN provides the independent voter that fixes it.
+- Gate models: 4 GBMs + NN, all trained WITHOUT round-1 pseudo-labels (S5's models are excluded — they've seen their own echoes).
+- Thresholds tightened: agreement at >0.98 / <0.02 (was 0.95/0.05).
+- Uncertain-row shift kill lowered to 0.05 (was 0.10; round 1 consumed the headroom).
+- All other round-1 mechanics retained: prevalence-balanced to π_t, 20% holdout consistency gate at ≥95%, ≤5 diversified copies, fold-safe train-side-only injection, real-OOF non-degradation.
+- Expected value is modest; abort without regret if any gate trips.
+
+**9.4b — Backport empirical window sampling to the GBM augmentation (1 submission max).**
+The GBMs' 15x augmentation currently draws windows uniformly. Resample the static augmentation from the empirical test (length, start) joint distribution — the same distribution the NN uses. This was roadmap item 7c, never executed. Cheap, principled, single-variable.
+
+**9.4c — Predict-time TTA over S2 dropout (fold into another submission, costs no slot).**
+At prediction time, generate ~8 views of each test row with fresh 7% S2 dropout within the observed window (S1 untouched), average in logit space. Pure variance reduction on the S2-dependent features. Validate on OOF first; if OOF shows no gain, skip. This may ride along with 9.4a or 9.4b since it is a prediction-averaging step, not a model change — but if it rides along, declare it in the run log so attribution stays honest.
+
+**Explicitly out of scope for Phase 9:** Optuna sweeps beyond ±20% of current hyperparameters, metric learning, any new loss-level domain adaptation, any threshold logic. If a slot is burning a hole in the budget, leave it unspent.
+
+## Day 4 — Final Selection Protocol
+
+No new experiments. The day has three jobs:
+
+**1. Consolidate the evidence.** Re-run the proxy credibility back-test against the full LB history (now 10+ points). Recompute σ of (LB − proxy-predicted) deltas — this is the real noise scale for the final decision, and it will be larger than the internal σ_L suggests.
+
+**2. Select the final two, maximally different in risk profile — NOT the top two public scores:**
+- **Slot A (conservative):** the banked configuration with the most robust construction — fewest moving parts, no pseudo-labels, no LB-fitted constants. As of handoff this is S4 (0.8264) or the 9.0b hybrid if it won. The 1,030-row public LB will reshuffle ±0.01–0.02 on private; the conservative pick is insurance against having fitted the public split.
+- **Slot B (aggressive):** the highest proxy-validated configuration from Phase 9 (expected: the NN blend, possibly + phenology features + 9.4 extras if each banked cleanly).
+- If the two candidates differ by <0.005 public LB, prefer construction robustness over score: fewer pseudo-labels, fewer aligned constants, fewer LB-informed choices.
+
+**3. Pre-flight both final files.** Full writer assertions, positive-rate check against π_t, and a manual diff of the two files' positive counts and top/bottom 20 rows — confirm the two submissions are genuinely different bets, not the same bet twice.
+
+**Budget note:** if ≥5 slots remain unused on Day 4, that is success, not waste. Resist the urge to spend them — every extra probe biases the final selection toward the public split.
+
+**Log everything** to runs.csv and project_knowledge.md as before: config hash, proxy triple with σ, LB triple, one-line lesson. The next agent inherits your logs, not your memory.
+
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-08-13T03:49:48+05:30.
+</ADDITIONAL_METADATA>

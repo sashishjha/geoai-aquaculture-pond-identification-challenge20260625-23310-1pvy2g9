@@ -1,0 +1,96 @@
+experiment_id,model,features,preprocessing,hyperparameters,validation_strategy,seed,F1,ROC_AUC,weighted_score,notes
+baseline_histgbm,HistGradientBoostingClassifier,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup train,"max_iter=400,lr=0.05,l2=1.0,class_weight=balanced",5-fold robust masking CV,42,,,,REFERENCE baseline - run src/train_baseline.py to populate exact numbers
+lgbm_robustcv,LGBMClassifier,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,"n_est=500,lr=0.03,num_leaves=31,subsample=0.8,colsample=0.8,reg_lambda=1.0,class_weight=balanced",5-fold ROBUST masking CV,42,0.9008,0.9748,0.9304,realistic test estimate; robust_std=0.0028
+lgbm_conventionalcv,LGBMClassifier,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,same as lgbm_robustcv,5-fold CONVENTIONAL CV,42,0.9759,0.9969,0.9843,optimistic reference; robust_std=0.0050; ~5pt gap vs robust shows masking shift
+ensemble_hgb_lgbm_xgb,hgb+lgbm+xgb,valid-month temporal+missingness+spectral,native NaN; dedup,probability-average of members,used for submission (fit on full train),42,,,,SUBMISSION model -> submission_checkpoint.csv; test pos_rate=0.476 via fixed 0.5 rule
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9091,0.9736,0.9349,robust_std=0.0054
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9271,0.9832,0.9496,robust_std=0.0053
+baseline_histgbm,HistGradientBoostingClassifier,per-band temporal stats + missingness + spectral indices (valid-month agg),native NaN (no imputation); -9999 treated as missing; dedup train,"max_iter=400,lr=0.05,l2=1.0,class_weight=balanced",5-fold conventional + 5-fold robust(masking-simulated valid),42,0.9113,0.9741,0.9364,REFERENCE. conv_score=0.9825; robust_std=0.0053; 158.8s
+ensemble_mean,hgb+cat,valid-month temporal+missingness+spectral,native NaN; dedup,mean of members,5-fold robust masking CV,42,0.9182,0.9816,0.9436,probability-average ensemble
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9091,0.9736,0.9349,robust_std=0.0054
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9054,0.975,0.9332,robust_std=0.0049
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9182,0.9806,0.9432,robust_std=0.0064
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9271,0.9832,0.9496,robust_std=0.0053
+ensemble_mean,hgb+lgbm+xgb+cat,valid-month temporal+missingness+spectral,native NaN; dedup,mean of members,5-fold robust masking CV,42,0.9129,0.9814,0.9403,probability-average ensemble
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9607,0.9941,0.974,robust_std=0.0071
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9627,0.9952,0.9757,robust_std=0.0070
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9572,0.9948,0.9723,robust_std=0.0067
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9605,0.9939,0.9739,robust_std=0.0077
+ensemble_mean,hgb+lgbm+xgb+cat,valid-month temporal+missingness+spectral,native NaN; dedup,mean of members,5-fold robust masking CV,42,0.9606,0.9945,0.9742,probability-average ensemble
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9704,0.9957,0.9805,robust_std=0.0059
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9723,0.9958,0.9817,robust_std=0.0069
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9706,0.9961,0.9808,robust_std=0.0052
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold robust masking CV,42,0.9667,0.9953,0.9781,robust_std=0.0080
+ensemble_mean,hgb+lgbm+xgb+cat,valid-month temporal+missingness+spectral,native NaN; dedup,mean of members,5-fold robust masking CV,42,0.9718,0.996,0.9815,probability-average ensemble
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9712,0.9957,0.981,robust_std=0.0061
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.97,0.9956,0.9803,robust_std=0.0063
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.972,0.9952,0.9813,robust_std=0.0061
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9658,0.9941,0.9771,robust_std=0.0095
+ensemble_mean,hgb+lgbm+xgb+cat,valid-month temporal+missingness+spectral,native NaN; dedup,mean of members,5-fold robust masking CV,42,0.9705,0.995,0.9803,probability-average ensemble
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9713,0.995,0.9808,robust_std=0.0070
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9384,0.9872,0.9579,robust_std=0.0056
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.942,0.9875,0.9602,robust_std=0.0073
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9364,0.9864,0.9564,robust_std=0.0100
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9371,0.9847,0.9561,robust_std=0.0076
+ensemble_mean,hgb+lgbm+xgb+cat,valid-month temporal+missingness+spectral,native NaN; dedup,mean of members,5-fold robust masking CV,42,0.94,0.9872,0.9588,probability-average ensemble
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9557,0.9877,0.9685,robust_std=0.0100
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9526,0.9884,0.9669,robust_std=0.0097
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9489,0.9886,0.9648,robust_std=0.0073
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.944,0.9874,0.9613,robust_std=0.0093
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9557,0.9877,0.9685,robust_std=0.0100
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9526,0.9884,0.9669,robust_std=0.0097
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9489,0.9886,0.9648,robust_std=0.0073
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.944,0.9874,0.9613,robust_std=0.0093
+ensemble_mean,hgb+lgbm+xgb+cat,valid-month temporal+missingness+spectral,native NaN; dedup,mean of members,5-fold robust masking CV,42,0.9517,0.9884,0.9664,probability-average ensemble
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9557,0.9877,0.9685,robust_std=0.0100
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9526,0.9884,0.9669,robust_std=0.0097
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9489,0.9886,0.9648,robust_std=0.0073
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.944,0.9874,0.9613,robust_std=0.0093
+ensemble_mean,hgb+lgbm+xgb+cat,valid-month temporal+missingness+spectral,native NaN; dedup,mean of members,5-fold robust masking CV,42,0.9517,0.9884,0.9664,probability-average ensemble
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9384,0.9872,0.9579,robust_std=0.0056
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.942,0.9875,0.9602,robust_std=0.0073
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9364,0.9864,0.9564,robust_std=0.0100
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9371,0.9847,0.9561,robust_std=0.0076
+ensemble_mean,hgb+lgbm+xgb+cat,valid-month temporal+missingness+spectral,native NaN; dedup,mean of members,5-fold robust masking CV,42,0.94,0.9872,0.9588,probability-average ensemble
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9371,0.9872,0.9572,robust_std=0.0090
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9371,0.9872,0.9572,robust_std=0.0090
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9371,0.9872,0.9572,robust_std=0.0090
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9404,0.9863,0.9588,robust_std=0.0101
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9325,0.9857,0.9537,robust_std=0.0081
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9382,0.9841,0.9566,robust_std=0.0086
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9371,0.9872,0.9572,robust_std=0.0090
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9404,0.9863,0.9588,robust_std=0.0101
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9325,0.9857,0.9537,robust_std=0.0081
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9382,0.9841,0.9566,robust_std=0.0086
+ensemble_mean,hgb+lgbm+xgb+cat,valid-month temporal+missingness+spectral,native NaN; dedup,mean of members,5-fold robust masking CV,42,0.9427,0.9863,0.9601,probability-average ensemble
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.972,0.9956,0.9815,robust_std=0.0071
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9699,0.9956,0.9802,robust_std=0.0065
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9721,0.9953,0.9813,robust_std=0.0067
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9701,0.9944,0.9798,robust_std=0.0083
+ensemble_ebf7b651583b,hgb+lgbm+xgb+cat,"absolute=True,z=False,rank=False",native NaN; dedup,aug=15x,5-fold SGKFold robust masking CV,42,0.97,0.995,0.98,config_hash=ebf7b651583b
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.972,0.9956,0.9815,robust_std=0.0071
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9699,0.9956,0.9802,robust_std=0.0065
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9721,0.9953,0.9813,robust_std=0.0067
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9701,0.9944,0.9798,robust_std=0.0083
+ensemble_ebf7b651583b,hgb+lgbm+xgb+cat,"absolute=True,z=False,rank=False",native NaN; dedup,aug=15x,5-fold SGKFold robust masking CV,42,0.97,0.995,0.98,config_hash=ebf7b651583b
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9706,0.9957,0.9806,robust_std=0.0056
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9726,0.9956,0.9818,robust_std=0.0063
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9728,0.9953,0.9818,robust_std=0.0063
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9698,0.994,0.9795,robust_std=0.0101
+ensemble_e5c8fdf4e68b,hgb+lgbm+xgb+cat,"absolute=True,z=False,rank=False",native NaN; dedup,aug=15x,5-fold SGKFold robust masking CV,42,0.9741,0.9949,0.9824,config_hash=e5c8fdf4e68b
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9713,0.9956,0.981,robust_std=0.0050
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9699,0.9957,0.9802,robust_std=0.0063
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9713,0.9956,0.981,robust_std=0.0050
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9734,0.9952,0.9821,robust_std=0.0056
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9719,0.9942,0.9808,robust_std=0.0086
+ensemble_690022d2dae8,hgb+lgbm+xgb+cat,"absolute=True,z=False,rank=False",native NaN; dedup,aug=15x,5-fold SGKFold robust masking CV,42,0.9727,0.9949,0.9816,config_hash=690022d2dae8
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9706,0.9955,0.9805,robust_std=0.0058
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9712,0.9958,0.981,robust_std=0.0051
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9728,0.9951,0.9817,robust_std=0.0064
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9684,0.9938,0.9786,robust_std=0.0078
+ensemble_1de72f8b7995,hgb+lgbm+xgb+cat,"absolute=True,z=False,rank=False",native NaN; dedup,aug=15x,5-fold SGKFold robust masking CV,42,0.972,0.9946,0.981,config_hash=1de72f8b7995
+model_hgb,hgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9713,0.9957,0.9811,robust_std=0.0058
+model_lgbm,lgbm,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9725,0.9956,0.9817,robust_std=0.0066
+model_xgb,xgb,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9722,0.995,0.9813,robust_std=0.0070
+model_cat,cat,valid-month temporal+missingness+spectral,native NaN; -9999=missing; dedup,see make_model(),5-fold SGKFold(block=25) robust masking,42,0.9714,0.9938,0.9803,robust_std=0.0086
+ensemble_1fad1f7a0efc,hgb+lgbm+xgb+cat,"absolute=True,z=False,rank=False",native NaN; dedup,aug=15x,5-fold SGKFold robust masking CV,42,0.9741,0.9948,0.9823,config_hash=1fad1f7a0efc

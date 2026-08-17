@@ -1,0 +1,19 @@
+[config] hash=690022d2dae8 use_absolute=True use_z_shape=False use_rank=False n_aug=15 av_weights=False
+[load_raw] dropped 4 duplicate train rows
+[hgb] robust CV  F1=0.9699 AUC=0.9957 score=0.9802 (+/-0.0063)
+[checkpoint] saved model_checkpoints/hgb_690022d2dae8_checkpoint.pkl
+[log] appended 'model_hgb' -> experiments_checkpoint/experiment_log.csv
+[lgbm] robust CV  F1=0.9713 AUC=0.9956 score=0.9810 (+/-0.0050)
+[resume] loading existing model_checkpoints/lgbm_690022d2dae8_checkpoint.pkl
+[log] appended 'model_lgbm' -> experiments_checkpoint/experiment_log.csv
+[xgb] robust CV  F1=0.9734 AUC=0.9952 score=0.9821 (+/-0.0056)
+[checkpoint] saved model_checkpoints/xgb_690022d2dae8_checkpoint.pkl
+[log] appended 'model_xgb' -> experiments_checkpoint/experiment_log.csv
+[cat] robust CV  F1=0.9719 AUC=0.9942 score=0.9808 (+/-0.0086)
+[checkpoint] saved model_checkpoints/cat_690022d2dae8_checkpoint.pkl
+[log] appended 'model_cat' -> experiments_checkpoint/experiment_log.csv
+[ensemble] robust CV F1=0.9727 AUC=0.9949 score=0.9816
+[ensemble] saved data_checkpoint/oof_690022d2dae8.csv
+[log] appended 'ensemble_690022d2dae8' -> experiments_checkpoint/experiment_log.csv
+[runs] logged run_id=690022d2_2026-08-13T04:19:47
+[done] 612.6s

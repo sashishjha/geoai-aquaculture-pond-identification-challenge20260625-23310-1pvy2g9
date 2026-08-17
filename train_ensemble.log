@@ -1,0 +1,19 @@
+[config] hash=e5c8fdf4e68b use_absolute=True use_z_shape=False use_rank=False n_aug=15 av_weights=False
+[load_raw] dropped 4 duplicate train rows
+[hgb] robust CV  F1=0.9706 AUC=0.9957 score=0.9806 (+/-0.0056)
+[resume] loading existing model_checkpoints/hgb_e5c8fdf4e68b_checkpoint.pkl
+[log] appended 'model_hgb' -> experiments_checkpoint/experiment_log.csv
+[lgbm] robust CV  F1=0.9726 AUC=0.9956 score=0.9818 (+/-0.0063)
+[resume] loading existing model_checkpoints/lgbm_e5c8fdf4e68b_checkpoint.pkl
+[log] appended 'model_lgbm' -> experiments_checkpoint/experiment_log.csv
+[xgb] robust CV  F1=0.9728 AUC=0.9953 score=0.9818 (+/-0.0063)
+[resume] loading existing model_checkpoints/xgb_e5c8fdf4e68b_checkpoint.pkl
+[log] appended 'model_xgb' -> experiments_checkpoint/experiment_log.csv
+[cat] robust CV  F1=0.9698 AUC=0.9940 score=0.9795 (+/-0.0101)
+[resume] loading existing model_checkpoints/cat_e5c8fdf4e68b_checkpoint.pkl
+[log] appended 'model_cat' -> experiments_checkpoint/experiment_log.csv
+[ensemble] robust CV F1=0.9741 AUC=0.9949 score=0.9824
+[ensemble] saved data_checkpoint/oof_e5c8fdf4e68b.csv
+[log] appended 'ensemble_e5c8fdf4e68b' -> experiments_checkpoint/experiment_log.csv
+[runs] logged run_id=e5c8fdf4_2026-08-12T09:46:18
+[done] 1172.5s

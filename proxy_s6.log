@@ -1,0 +1,6 @@
+[config] hash=690022d2dae8 use_absolute=True use_z_shape=False use_rank=False n_aug=15 av_weights=False
+[load_raw] dropped 4 duplicate train rows
+[lgbm] robust CV  F1=0.9713 AUC=0.9956 score=0.9810 (+/-0.0050)
+[checkpoint] saved model_checkpoints/lgbm_690022d2dae8_checkpoint.pkl
+[log] appended 'model_lgbm' -> experiments_checkpoint/experiment_log.csv
+[done] 78.4s
